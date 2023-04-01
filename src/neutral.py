@@ -1,5 +1,5 @@
 import numpy as np
-from astropy import units as u
+#from astropy import units as u
 
 def nui_1(Tn, O, O2, N2):
     """
@@ -14,20 +14,6 @@ def nui_1(Tn, O, O2, N2):
         
     return term_O + term_O2 + term_N2
 
-def nui_2(O, O2, N2):
-    """
-    The ion-neutral collision frequency
-    by Davies et al. (1997)
-    """
-    
-    u_coeficient = pow(u.m, 3) * pow(u.s, -1)
-    u_densities = pow(u.cm, 3)
-    
-    term_O = 2.44e-16 * u_coeficient * O * u_densities
-    term_O2 = 4.28e-16 * u_coeficient * O2 * u_densities
-    term_N2 = 4.34e-16 * u_coeficient * N2 * u_densities
-    
-    return term_N2 + term_O2 + term_O
 
 def nu_3(O, Tn, Ti):
     """
