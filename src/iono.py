@@ -43,8 +43,6 @@ class collision_frequencies:
         return (CN2 + CO2 + CO + CHe + CH) / 5.0 
     
     
-
-
 class gyrofrequency:
     
     #default: Equatorial geomagnetic field in Tesla
