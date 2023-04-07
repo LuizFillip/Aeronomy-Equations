@@ -51,6 +51,7 @@ class gyrofrequency:
         """Gyrofrequency for ions in 1/s"""
         effective_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3.
         return cs.elementary_charge * B / effective_mass 
+    
     @staticmethod
     def electrons(B = 0.25e-4):
         """Gyrofrequency for electrons in 1/s"""
@@ -126,11 +127,13 @@ class conductivity:
     @property
     def hall(self):
         """Hall conductivity on the field line"""
-        return (self.parallel * self.omega_e * self.nue**2) / self.R2
+        return (self.parallel * self.omega_e * 
+                self.nue**2) / self.R2
     @property
     def pedersen(self):
         """Pedersen conductivity on the field line"""
-        return (self.parallel * (1 + self.R1) * self.nue**2) / self.R2
+        return (self.parallel * (1 + self.R1) * 
+                self.nue**2) / self.R2
 
 class conductivity2:
     
@@ -156,7 +159,7 @@ class conductivity2:
                 (electron_term + ion_term))
     
     @property
-    def Pedersen(self): 
+    def pedersen(self): 
         """Along the electric field and perpendicular to B"""
         electron_term = (
             electron_mobility( self.nu_e) / 
@@ -168,7 +171,7 @@ class conductivity2:
         return self.Ne * cs.elementary_charge * (ion_term - electron_term)
         
     @property
-    def Hall(self):
+    def hall(self):
         """Perpendicular to both electric and B"""
         
         electron_term = (
