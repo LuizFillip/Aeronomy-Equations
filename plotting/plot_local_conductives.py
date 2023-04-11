@@ -32,6 +32,7 @@ def plot_local_conductivies(
             max(alts) + step, 
             step),
         ylim = [min(alts), max(alts)],
+        xlim = [1e-14, 1e7],
         xlabel = f"{name} ({units})",
         ylabel = "Altitude (km)"
         )
@@ -43,7 +44,7 @@ def quick_view():
          dpi = 300
          )
 
-     dn  = dt.datetime(2013, 1, 1)
+     dn  = dt.datetime(2013, 1, 1, 12)
      df = neutral_iono_parameters(
         dn  = dn, 
         hmin = 100

@@ -47,10 +47,16 @@ class gyrofrequency:
     
     #default: Equatorial geomagnetic field in Tesla
     @staticmethod
-    def ions(B = 0.25e-4):
+    def ions(B = 0.25e-4, mass = "effective"):
         """Gyrofrequency for ions in 1/s"""
-        effective_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3.
-        return cs.elementary_charge * B / effective_mass 
+        
+        if mass == "effective":
+            # Effective mass of ions O+, O2+, NO+ in kg
+            ions_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3
+        else:
+            ions_mass = cs.proton_mass
+            
+        return cs.elementary_charge * B / ions_mass 
     
     @staticmethod
     def electrons(B = 0.25e-4):
@@ -59,20 +65,30 @@ class gyrofrequency:
 
 
 
-def electron_neutral_collision(Tn, Nn):
+def electron_neutral_collision(Tn, Nn, Te, ne):
     """
     The electron-neutral collision rates (frequency) 
-    Denadini et al. 2007
+    Kelley (2009)
     """
-    return (5.4e-10) * Nn * np.sqrt(Tn)
+    return (5.4e-10 * Nn * np.sqrt(Tn) + 
+            (34 + 4.18 * np.log(Te**3 / ne))
+            * ne * Te**(-3/2))
 
-def electron_cyclotron(B = 0.285e-04):
+def electron_cyclotron(B = 0.25e-04):
     """Electron gyro frequency"""
     return - (cs.elementary_charge * B / cs.electron_mass)
 
-def ion_cyclotron(B = 0.285e-04):
+def ion_cyclotron(B = 0.25e-04, mass = "effective"):
     """Ion gyro frequency"""
-    return ( cs.elementary_charge * B / cs.proton_mass)
+    
+    if mass == "effective":
+        # Effective mass of ions O+, O2+, NO+ in kg
+        ions_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3
+    else:
+        ions_mass = cs.proton_mass
+        
+    return (cs.elementary_charge * B /  ions_mass)
+
 
 def electron_mobility(nu_e):
     """Electric mobility for electrons (mass transport)"""
@@ -82,11 +98,11 @@ def ion_mobility(nu_i):
     """Electric mobility for ions (mass transport)"""
     return (cs.elementary_charge) / ( cs.proton_mass * nu_i)
 
-def electron_ratio(nu_e, B = 0.285e-04):
+def electron_ratio(nu_e, B = 0.25e-04):
     """Electron ratio cyclotron frequency and collision"""
     return electron_cyclotron(B) / nu_e
 
-def ion_ratio(nu_i, B = 0.285e-04):
+def ion_ratio(nu_i, B = 0.25e-04):
     """Ion ratio cyclotron frequency and collision"""
     return ion_cyclotron(B) / nu_i
 
@@ -140,14 +156,14 @@ class conductivity2:
     def __init__(
             self, 
             Ne, 
-            nu_e, 
-            nu_i, 
-            B = 0.285e-04
+            nue, 
+            nui, 
+            B = 0.25e-04
             ):
         
         self.Ne = Ne
-        self.nu_e = nu_e
-        self.nu_i = nu_i
+        self.nu_e = nue
+        self.nu_i = nui
         self.B = B
         
     @property
@@ -155,12 +171,14 @@ class conductivity2:
         """Along magnetic field (B)"""
         ion_term = 1 / ( cs.proton_mass * self.nu_i)
         electron_term  = 1 / ( cs.electron_mass * self.nu_e)
+        
         return (self.Ne *  cs.elementary_charge**2 * 
                 (electron_term + ion_term))
     
     @property
     def pedersen(self): 
         """Along the electric field and perpendicular to B"""
+        
         electron_term = (
             electron_mobility( self.nu_e) / 
             (1 + electron_ratio( self.nu_e, B = self.B)**2))
@@ -168,15 +186,16 @@ class conductivity2:
         ion_term = (ion_mobility( self.nu_i) / 
                     (1 + ion_ratio(self.nu_i, B = self.B)**2))
         
-        return self.Ne * cs.elementary_charge * (ion_term - electron_term)
+        return (self.Ne * cs.elementary_charge * 
+                (ion_term - electron_term))
         
     @property
     def hall(self):
         """Perpendicular to both electric and B"""
         
         electron_term = (
-            electron_ratio( self.nu_e, B = self.B)**2 / 
-            (1 + electron_ratio( self.nu_e, B = self.B)**2))
+            electron_ratio(self.nu_e, B = self.B)**2 / 
+            (1 + electron_ratio(self.nu_e, B = self.B)**2))
         
         ion_term = (ion_ratio( self.nu_i, B =  self.B)**2 / 
                     (1 + ion_ratio( self.nu_i, B =  self.B)**2))

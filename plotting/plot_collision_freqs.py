@@ -19,8 +19,7 @@ def plot_collision_freq(
     else:
         symbol = "$\\nu_{en}$"
         
-    ax.plot(nu, alts,
-            lw = 1, label = symbol)
+    ax.plot(nu, alts, lw = 1, label = symbol)
     
     ax.legend()
     
@@ -36,50 +35,9 @@ def plot_collision_freq(
         )
     return ax
 
-
-def plot_local_conductivies(
-        ax, 
-        nu, 
-        alts, 
-        step = 50
-        ):
-    
-    name = "Condutividades locais"
-    units = "mho"
-    
-    if nu.name == "perd":
-        symbol = "$\sigma_{P}$"
-    elif nu.name == "hall":
-        symbol = "$\sigma_{H}$"
-    else:
-        symbol = "$\sigma_{0}$"
-        
-    ax.plot(nu, alts,
-            lw = 1, label = symbol)
-    
-    ax.legend(loc = "upper right")
-    
-    ax.set(
-        xscale = "log", 
-        yticks = np.arange(
-            min(alts), 
-            max(alts) + step, 
-            step),
-        ylim = [min(alts), max(alts)],
-        xlabel = f"{name} ({units})",
-        ylabel = "Altitude (km)"
-        )
-    return ax
-
-
-
-def plot_profiles():
-    
+def quick_view():
     
     fig, ax = plt.subplots(
-        figsize = (6, 6),
-        ncols = 2,
-        sharey = True,
         dpi = 300
         )
     
@@ -92,35 +50,20 @@ def plot_profiles():
         )
     
     plot_collision_freq(
-            ax[0], 
+            ax, 
             df["nui"], 
             df.index)
     
     plot_collision_freq(
-            ax[0], 
+            ax, 
             df["nue"], 
             df.index)
-    
-    plot_local_conductivies(
-            ax[1], 
-            df["perd"], 
-            df.index
-            )
-    
-    plot_local_conductivies(
-            ax[1], 
-            df["hall"], 
-            df.index
-            )
-    
-    ax = plot_local_conductivies(
-            ax[1], 
-            df["par"], 
-            df.index
-            )
+   
     
     ax.set(ylabel = "")
     fig.suptitle("São Luis - " + dn.strftime("%d/%m/%Y"))
     plt.show()
     
     return fig
+
+quick_view()
