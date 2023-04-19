@@ -11,7 +11,7 @@ def plot_local_conductivies(
         ):
     
     name = "Condutividades locais"
-    units = "mho"
+    units = "mho/m"
     
     if nu.name == "perd":
         symbol = "$\sigma_{P}$"
@@ -30,7 +30,9 @@ def plot_local_conductivies(
         yticks = np.arange(
             min(alts), 
             max(alts) + step, 
-            step),
+            step
+            ),
+        
         ylim = [min(alts), max(alts)],
         xlim = [1e-14, 1e7],
         xlabel = f"{name} ({units})",
@@ -38,34 +40,52 @@ def plot_local_conductivies(
         )
     return ax
 
-def quick_view():
+def plot_local_ratio_conductivities():
     
      fig, ax = plt.subplots(
-         dpi = 300
+         dpi = 300, 
+         ncols = 2,
+         sharey = True
          )
 
-     dn  = dt.datetime(2013, 1, 1, 12)
+     dn  = dt.datetime(2013, 1, 1, 12, 0)
+     
      df = neutral_iono_parameters(
         dn  = dn, 
-        hmin = 100
-        )
-    
+        hmin = 50, 
+        hmax = 400,
+        mass = "effective")
+     
+     
+     ax[1].plot(df["hall"] / df["perd"],  df.index)
+     ax[1].set(
+         xlim = [-2, 100], 
+         xlabel = "$\sigma_H / \sigma_P$"
+               )
+     
      plot_local_conductivies(
-            ax, 
+            ax[0], 
             df["perd"], 
             df.index
             )
     
      plot_local_conductivies(
-            ax, 
+            ax[0], 
             df["hall"], 
             df.index
             )
     
      ax = plot_local_conductivies(
-            ax, 
+            ax[0], 
             df["par"], 
             df.index
             )
      
-quick_view()
+     fig.suptitle(dn.strftime("%d/%m/%Y %H:%M (UT)") +
+                  " - São Luís")
+     
+     return fig
+     
+
+from utils import save_plot     
+plot_local_ratio_conductivities()
