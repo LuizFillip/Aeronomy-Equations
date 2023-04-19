@@ -1,37 +1,4 @@
 import numpy as np
-#from astropy import units as u
-
-def nui_1(Tn, O, O2, N2):
-    """
-    The ion-neutral collision frequency
-    by Bailey and Balan (1996)
-    """
-    term_O = (4.45e-11 * O * np.sqrt(Tn) * 
-              (1.04 - 0.067 * np.log10(Tn))**2)
-    
-    term_O2 = 6.64e-10 * O2
-    term_N2 = 6.82e-10 * N2
-        
-    return term_O + term_O2 + term_N2
-
-
-def nu_3(O, Tn, Ti):
-    """
-    The ion-neutral collision frequency
-    by Schunk and Nagy, 2000
-
-    Parameters
-    ----------
-    O :  float array
-        Molecular oxygen concentration
-    Tn : float array
-        neutral temperature
-    Ti : float array
-        ion temperature
-    """
-    Tr = (Ti + Tn) / 2
-    return 3.7e-11 * O * np.sqrt(Tr) * (1 - 0.064 * np.log10(Tr))**2
-
 
 def plasma_diffusion(nui):
     """
