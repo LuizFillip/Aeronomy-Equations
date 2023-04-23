@@ -1,55 +1,50 @@
-from models import altrange_iri, altrange_msis
 import datetime as dt
 from GEO import sites
 import pandas as pd
 import ionosphere as io
-import matplotlib.pyplot as plt
+from models import get_data
 
-
-glat, glon = sites["saa"]["coords"]
-
-kargs = dict(
-    dn = dt.datetime(2013, 1, 1, 21), 
-    glat = glat, 
-    glon = glon
+def compute_parameters(df) -> dict:
+    
+    nu = io.collision_frequencies()
+    
+    nui = nu.ion_neutrals(
+        df["Tn"], df["O"], 
+        df["O2"], df["N2"]
+        )
+        
+    nue = nu.electrons_neutrals(
+        df["O"], df["O2"], df["N2"],
+        df["He"], df["H"], df["Te"]
     )
+    
+    cond = io.conductivity(df["ne"], nue, nui)
+    
+
+    return {"perd": cond.pedersen, 
+            "hall": cond.hall, 
+            "parl": cond.parallel,
+            "nui": nui, 
+            "nue": nue}
+
+def get_conductivity(**kwargs):
+    return pd.DataFrame(
+        compute_parameters(
+            get_data(**kwargs))
+        )
 
 
-def get_data(**kargs):
-    
-    iri = altrange_iri(**kargs)
-    
-    msi = altrange_msis(**kargs)
-    
-    return pd.concat([msi, iri], axis = 1)
+def main():
 
-df = get_data(**kargs)
-
-
-def compute_collisions(df):
+    glat, glon = sites["saa"]["coords"]
     
-    nui = io.ion_neutral()
-    
-    nui = nui.BB1996(
-        df["Tn"], 
-        df["O"], 
-        df["O2"], 
-        df["N2"]
+    kwargs = dict(
+        dn = dt.datetime(2013, 1, 1, 21), 
+        glat = glat, 
+        glon = glon,
+        hmin = 200 
         )
     
+    ds = get_conductivity(**kwargs)
     
-    nui2 = io.collision_frequencies()
-    
-    nue = nui2.electrons_neutrals(
-        df["O"], 
-        df["O2"],
-        df["N2"],
-        df["He"],
-        df["H"],
-        df["Te"]
-    )
-    
-    return nui, nue
-
-
 
