@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Models.src.core import neutral_iono_parameters
+from utils import save_plot  
+import ionosphere as io
+from GEO import sites 
 import datetime as dt
+
 
 def plot_local_conductivies(
         ax, 
@@ -40,21 +43,16 @@ def plot_local_conductivies(
         )
     return ax
 
-def plot_local_ratio_conductivities():
+def plot_local_ratio_conductivities(**kwargs):
     
      fig, ax = plt.subplots(
          dpi = 300, 
          ncols = 2,
          sharey = True
          )
-
-     dn  = dt.datetime(2013, 1, 1, 12, 0)
      
-     df = neutral_iono_parameters(
-        dn  = dn, 
-        hmin = 50, 
-        hmax = 400,
-        mass = "effective")
+    
+     df = io.get_conductivity(**kwargs)
      
      
      ax[1].plot(df["hall"] / df["perd"],  df.index)
@@ -77,15 +75,24 @@ def plot_local_ratio_conductivities():
     
      ax = plot_local_conductivies(
             ax[0], 
-            df["par"], 
+            df["parl"], 
             df.index
             )
      
-     fig.suptitle(dn.strftime("%d/%m/%Y %H:%M (UT)") +
+     fig.suptitle(kwargs["dn"].strftime("%d/%m/%Y %H:%M (UT)") +
                   " - São Luís")
      
      return fig
      
+glat, glon = sites["saa"]["coords"]
 
-from utils import save_plot     
-plot_local_ratio_conductivities()
+kwargs = dict(
+    dn = dt.datetime(2013, 1, 1, 21), 
+    glat = glat, 
+    glon = glon,
+    hmin = 50
+    )
+   
+fig = plot_local_ratio_conductivities(**kwargs)
+
+
