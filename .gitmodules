@@ -1,0 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Apr 23 12:51:57 2023
+
+@author: Luiz
+"""
+
+[submodule "models"]
+    path = models
+    url = https://github.com/LuizFillip/Aeronomy-models
