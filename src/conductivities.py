@@ -1,50 +1,140 @@
-import numpy as np
 import scipy.constants as cs
 
 
-class collision_frequencies:
-    """
-    See momentum transfer in Schuck and Nagy 2000
-    """
-    @staticmethod
-    def ion_neutrals(O, O2, N2, T):
+class conductivity:
+    """Ionospheric conductivity given by Kelley 2009"""
+    def __init__(
+            self, 
+            Ne, 
+            nue, 
+            nui, 
+            B = 0.25e-04,
+            mass = "effective"):
         
-        CO2 = (2.31e-10 * O + 
-              2.59e-11 * O2 * 
-              np.sqrt(T) + 4.13e-10 * N2)
-                
-        CO  = (4.45e-11 * O * np.sqrt(T) + 
-              6.64e-10 * O2 + 6.82e-10 * N2)
+        self.Ne = Ne
+        self.nu_e = nue
+        self.nu_i = nui
+        self.B = B
         
-        CN2 = (2.58e-10 * O + 
-              4.49e-10 * O2 + 
-              5.14e-11 * np.sqrt(T))
-                
-        CNO = (2.44e-10 *O +
-              4.27e-10 * O2 + 
-              4.34e-10 * N2)
+        if mass == "effective":
+            # Effective mass of ions O+, O2+, NO+ in kg
+            ion_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3
+        else:
+            ion_mass = cs.proton_mass
+            
         
-        return (CO2 + CO + CN2 + CNO) / 4.0
+        self.ion_mass = ion_mass
+        self.electron_mass = cs.electron_mass
+        self.charge = cs.elementary_charge
     
-    @staticmethod
-    def electrons_neutrals(O, O2, N2, He, H, Te):
-        """Collision frequencies electrons with neutrals """
-        #Must substitute T to Te (electron temperature)
-        CN2 = 2.33e-11 * N2 * Te
+    @property
+    def electron_cyclotron(self):
+        """Electron gyro frequency"""
+        return - (self.charge * self.B / self.electron_mass)
+    
+    @property
+    def ion_cyclotron(self):
+        """Ion gyro frequency"""
+        return (self.charge * self.B / self.ion_mass)
+    
+    @property
+    def electron_mobility(self):
+        """Electric mobility for electrons (mass transport) (be)"""
+        return (- self.charge) / (self.electron_mass * self.nu_e)
+    
+    @property
+    def ion_mobility(self):
+        """Electric mobility for ions (mass transport) (bi)"""
+        return (self.charge) / (self.ion_mass * self.nu_i)
+
+    @property
+    def electron_ratio(self):
+        """
+        Ratio Electron cyclotron and eletron-nutral collision
         
-        CO2 = 1.82e-10 * O2 * np.sqrt(Te)
-        
-        CO = 8.90e-11 * O * np.sqrt(Te)
-        
-        CHe = 4.60e-10 * He * np.sqrt(Te)
-        
-        CH = 4.50e-09 * H * np.sqrt(Te)
-        
-        return (CN2 + CO2 + CO + CHe + CH) / 5.0 
+        """
+        return self.electron_cyclotron / self.nu_e
+    
+    @property
+    def ion_ratio(self):
+        """
+        Ratio by ion cyclotron frequency and ion-neutral collision
+        """
+        return self.ion_cyclotron / self.nu_i
     
     
-class gyrofrequency:
+    @property
+    def parallel(self):
+        """Along magnetic field (B)"""
+        ion_term = 1 / (self.ion_mass * self.nu_i)
+        electron_term = 1 / (self.electron_mass * self.nu_e)
+        
+        return (self.Ne *  cs.elementary_charge**2 * 
+                (electron_term + ion_term))
     
+   
+    @property
+    def pedersen(self): 
+        """Along the electric field and perpendicular to B"""
+        
+        electron_term = (
+            self.electron_mobility / (1 + self.electron_ratio**2)
+            )
+        
+        ion_term = (
+            self.ion_mobility / (1 + self.ion_ratio**2)
+            )
+        
+        return (
+            self.Ne * self.charge * (ion_term - electron_term)
+            )
+    
+    @property
+    def pedersen_F(self):
+        """
+        For κi >> 1 (above 130 km) the Pedersen conductivity can
+        be compute by
+        """
+        return self.Ne * self.ion_mass * self.nu_i / self.B**2
+        
+    @property
+    def hall(self):
+        """Perpendicular to both electric and B"""
+        
+        electron_term = (
+            self.electron_ratio**2 / (1 + self.electron_ratio**2)
+            )
+        
+        ion_term = (
+            self.ion_ratio**2 / (1 + self.ion_ratio**2)
+            )
+        
+        return (self.Ne * self.charge / 
+                self.B) * (electron_term - ion_term)
+
+
+
+
+class conductivity2:
+    """Ionospheric conductivity given by Maeda 1977"""
+    def __init__(
+            self, 
+            ne, 
+            nue, 
+            nui
+            ):
+        
+        self.nue = nue
+        self.ne = ne
+        self.nue = nue
+        self.nui = nui
+        
+       
+        
+        self.omega_e = self.electrons()
+        self.omega_i = self.ions()
+        
+        
     #default: Equatorial geomagnetic field in Tesla
     @staticmethod
     def ions(B = 0.25e-4, mass = "effective"):
@@ -62,70 +152,6 @@ class gyrofrequency:
     def electrons(B = 0.25e-4):
         """Gyrofrequency for electrons in 1/s"""
         return  cs.elementary_charge * B / cs.electron_mass
-
-
-
-def electron_neutral_collision(Tn, Nn, Te, ne):
-    """
-    The electron-neutral collision rates (frequency) 
-    Kelley (2009)
-    """
-    return (5.4e-10 * Nn * np.sqrt(Tn) + 
-            (34 + 4.18 * np.log(Te**3 / ne))
-            * ne * Te**(-3/2))
-
-def electron_cyclotron(B = 0.25e-04):
-    """Electron gyro frequency"""
-    return - (cs.elementary_charge * B / cs.electron_mass)
-
-def ion_cyclotron(B = 0.25e-04, mass = "effective"):
-    """Ion gyro frequency"""
-    
-    if mass == "effective":
-        # Effective mass of ions O+, O2+, NO+ in kg
-        ions_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3
-    else:
-        ions_mass = cs.proton_mass
-        
-    return (cs.elementary_charge * B /  ions_mass)
-
-
-def electron_mobility(nu_e):
-    """Electric mobility for electrons (mass transport)"""
-    return (- cs.elementary_charge) / ( cs.electron_mass * nu_e)
-
-def ion_mobility(nu_i):
-    """Electric mobility for ions (mass transport)"""
-    return (cs.elementary_charge) / ( cs.proton_mass * nu_i)
-
-def electron_ratio(nu_e, B = 0.25e-04):
-    """Electron ratio cyclotron frequency and collision"""
-    return electron_cyclotron(B) / nu_e
-
-def ion_ratio(nu_i, B = 0.25e-04):
-    """Ion ratio cyclotron frequency and collision"""
-    return ion_cyclotron(B) / nu_i
-
-
-
-class conductivity:
-    """Ionospheric conductivity given by Maeda 1977"""
-    def __init__(
-            self, 
-            ne, 
-            nue, 
-            nui
-            ):
-        
-        self.nue = nue
-        self.ne = ne
-        self.nue = nue
-        self.nui = nui
-        
-        omega = gyrofrequency()
-        
-        self.omega_e = omega.electrons()
-        self.omega_i = omega.ions()
     
     @property
     def R1(self):
@@ -150,59 +176,3 @@ class conductivity:
         """Pedersen conductivity on the field line"""
         return (self.parallel * (1 + self.R1) * 
                 self.nue**2) / self.R2
-
-class conductivity2:
-    
-    def __init__(
-            self, 
-            Ne, 
-            nue, 
-            nui, 
-            B = 0.25e-04
-            ):
-        
-        self.Ne = Ne
-        self.nu_e = nue
-        self.nu_i = nui
-        self.B = B
-        
-    @property
-    def parallel(self):
-        """Along magnetic field (B)"""
-        ion_term = 1 / ( cs.proton_mass * self.nu_i)
-        electron_term  = 1 / ( cs.electron_mass * self.nu_e)
-        
-        return (self.Ne *  cs.elementary_charge**2 * 
-                (electron_term + ion_term))
-    
-    @property
-    def pedersen(self): 
-        """Along the electric field and perpendicular to B"""
-        
-        electron_term = (
-            electron_mobility( self.nu_e) / 
-            (1 + electron_ratio( self.nu_e, B = self.B)**2))
-        
-        ion_term = (ion_mobility( self.nu_i) / 
-                    (1 + ion_ratio(self.nu_i, B = self.B)**2))
-        
-        return (self.Ne * cs.elementary_charge * 
-                (ion_term - electron_term))
-        
-    @property
-    def hall(self):
-        """Perpendicular to both electric and B"""
-        
-        electron_term = (
-            electron_ratio(self.nu_e, B = self.B)**2 / 
-            (1 + electron_ratio(self.nu_e, B = self.B)**2))
-        
-        ion_term = (ion_ratio( self.nu_i, B =  self.B)**2 / 
-                    (1 + ion_ratio( self.nu_i, B =  self.B)**2))
-        
-        return (self.Ne * cs.elementary_charge / 
-                self.B) * (electron_term - ion_term)
-
-
-
-
