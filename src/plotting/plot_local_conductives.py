@@ -52,7 +52,7 @@ def plot_local_ratio_conductivities(**kwargs):
          )
      
     
-     df = io.get_conductivity(**kwargs)
+     df = io.cond_from_models(**kwargs)
      
      
      ax[1].plot(df["hall"] / df["perd"],  df.index)
