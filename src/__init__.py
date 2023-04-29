@@ -4,7 +4,11 @@ from .core import (
     cond_from_file, 
     cond_from_models, 
     test_data, 
-    compute_parameters)
+    compute_parameters, 
+    load_calculate
+    )
+
+
 import settings as s
 
 s.config_labels()

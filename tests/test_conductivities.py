@@ -22,7 +22,7 @@ c = conductivity()
 
 
 
-def test_ion_ratio(nui):
+def test_ion_term_ratio(nui):
     
     ion_term = c.ion_term(nui)
     r_ion = c.ion_ratio(nui) 
@@ -51,7 +51,7 @@ def test_pedersen_above_130km():
     assert ...
 
 
-def test_ion_ratio():
+def test_ion_mass_ratio():
         
     eff_mass = (2.66e-26 + 5.31e-26 + 4.99e-26) / 3
     pro_mass = c.proton_mass

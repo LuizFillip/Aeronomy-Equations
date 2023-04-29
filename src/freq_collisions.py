@@ -47,27 +47,57 @@ class ion_neutral:
 
 class collision_frequencies:
     """
-    See momentum transfer in Schuck and Nagy 2000.
-    """
+     A collection of functions for calculating collision frequencies 
+     between ions, electrons, and neutrals in a plasma.
+   
+     References:
+         - Schuck, P. W., & Nagy, A. F. (2000). Ionospheres: Physics, 
+         plasma physics, and chemistry
+   
+     Functions:
+         - ion_neutrals(Tn, O, O2, N2): Calculates the ion-neutral 
+            collision frequency in a plasma.
+     
+         Arguments:
+           - Tn: float, the neutral temperature in Kelvin.
+           - O: float, the O density in cm^-3.
+           - O2: float, the O2 density in cm^-3.
+           - N2: float, the N2 density in cm^-3.
+           Returns:
+           - float, the ion-neutral collision frequency in s^-1.
+   
+        - electrons_neutrals(O, O2, N2, He, H, Te): Calculates the 
+        electron-neutral collision frequency in a plasma.
+        
+       Arguments:
+       - O: float, the O density in cm^-3.
+       - O2: float, the O2 density in cm^-3.
+       - N2: float, the N2 density in cm^-3.
+       - He: float, the He density in cm^-3.
+       - H: float, the H density in cm^-3.
+       - Te: float, the electron temperature in Kelvin.
+       Returns:
+       - float, the electron-neutral collision frequency in s^-1.
+   """
     @staticmethod
     def ion_neutrals(Tn, O, O2, N2):
         
-        CO2 = (2.31e-10 * O + 
+        term_O2 = (2.31e-10 * O + 
               2.59e-11 * O2 * 
               np.sqrt(Tn) + 4.13e-10 * N2)
                 
-        CO  = (4.45e-11 * O * np.sqrt(Tn) + 
+        term_O  = (4.45e-11 * O * np.sqrt(Tn) + 
               6.64e-10 * O2 + 6.82e-10 * N2)
         
-        CN2 = (2.58e-10 * O + 
+        term_N2 = (2.58e-10 * O + 
               4.49e-10 * O2 + 
               5.14e-11 * np.sqrt(Tn))
                 
-        CNO = (2.44e-10 *O +
+        term_NO = (2.44e-10 *O +
               4.27e-10 * O2 + 
               4.34e-10 * N2)
         
-        return (CO2 + CO + CN2 + CNO) / 4.0
+        return (term_O2 +  term_O +  term_N2 +  term_NO) / 4.0
     
 
     
@@ -83,6 +113,22 @@ class collision_frequencies:
         
         term_He = 4.60e-10 * He * np.sqrt(Te)
         
-        term_H = 4.50e-09 * H * (1 -1.35e-4 * Te)* np.sqrt(Te)
+        term_H = 4.50e-09 * H * (1 - 1.35e-4 * Te)* np.sqrt(Te)
         
         return (term_N2 + term_O2 + term_O + term_He + term_H) / 5.0 
+    
+    @staticmethod
+    def electrons_neutrals2(O, O2, N2, He, H, Te):
+        """Collision frequencies electrons with neutrals """
+
+        CN2 = 2.33e-11 * N2 * Te
+
+        CO2 = 1.82e-10 * O2 * np.sqrt(Te)
+
+        CO = 8.90e-11 * O * np.sqrt(Te)
+
+        CHe = 4.60e-10 * He * np.sqrt(Te)
+
+        CH = 4.50e-09 * H * np.sqrt(Te)
+
+        return (CN2 + CO2 + CO + CHe + CH) / 5.0     

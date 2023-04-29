@@ -49,21 +49,23 @@ class conductivity:
     
     # testando para o caso de ki / 1 + ki^2
     def electron_term(self, ne, nue):
+        """Electron part for compute pedersen conductivity"""
         return ((ne * self.charge / self.B) * 
-                abs(self.electron_ratio(nue)) / (1 + self.electron_ratio(nue)**2))
+                abs(self.electron_ratio(nue)) / (1 + pow(self.electron_ratio(nue), 2)))
     
     def ion_term(self, ne, nui):
+        """Ion part for compute pedersen conductivity"""
         return ((ne * self.charge / self.B) *  
-                self.ion_ratio(nui) / (1 + self.ion_ratio(nui)**2))
+                self.ion_ratio(nui) / (1 + pow(self.ion_ratio(nui), 2)))
         
     def pedersen(self, ne, nui, nue): 
         """Along the electric field and perpendicular to B"""
-        return abs(self.electron_term(ne, nue)) + self.ion_term(ne, nui)
+        return self.electron_term(ne, nue) + self.ion_term(ne, nui)
             
     def pedersen_F(self, ne, nui):
         """
         For κi >> 1 (above 130 km) the Pedersen conductivity can
-        be compute by
+        be compute by (Sultan 1996)
         """
         return ne * self.ion_mass * nui / self.B**2
         
@@ -75,7 +77,7 @@ class conductivity:
         return (ne *  cs.elementary_charge**2 * (electron_term + ion_term))
     
     def hall(self, ne, nui, nue):
-        """Perpendicular to both electric and B"""
+        """Perpendicular to both E and B"""
         
         electron_term = (
             self.electron_ratio(nue)**2 / (1 + self.electron_ratio(nue)**2)
