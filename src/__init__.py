@@ -8,7 +8,7 @@ from .core import (
     load_calculate
     )
 
-
+from .methods import scale_gradient
 import settings as s
 
 s.config_labels()
