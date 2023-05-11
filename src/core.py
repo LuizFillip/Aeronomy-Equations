@@ -28,7 +28,6 @@ def load_calculate(
     df["perd"] = c.pedersen(
         df["Ne"], df["nui"], df["nue"]
         )
-
     
     return df
 
