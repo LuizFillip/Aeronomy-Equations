@@ -74,7 +74,8 @@ class conductivity:
         ion_term = 1 / (self.ion_mass * nui)
         electron_term = 1 / (self.electron_mass * nue)
         
-        return (ne *  cs.elementary_charge**2 * (electron_term + ion_term))
+        return (ne *  cs.elementary_charge**2 *
+                (electron_term + ion_term))
     
     def hall(self, ne, nui, nue):
         """Perpendicular to both E and B"""
@@ -146,3 +147,11 @@ class conductivity2:
         """Hall conductivity on the field line"""
         return (self.parallel * self.omega_e * 
                 self.nue / self.R2)
+
+
+
+
+
+
+
+

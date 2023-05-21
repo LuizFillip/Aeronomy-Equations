@@ -1,8 +1,8 @@
 import pandas as pd
 import ionosphere as io
 from models import altrange_models
-from atmosphere import recombination_rate
-
+from utils import datetime_from_fn
+import atmosphere as atm
 
 
 def compute_parameters(df) -> dict:
@@ -58,10 +58,7 @@ def cond_from_file(
     return ds[list(ds.columns)[::-1]]
 
 
-
-
-
-def load_calculate(infile):
+def load_calculate(infile, dn = None):
 
     df = pd.read_csv(infile, index_col = 0)
     
@@ -83,10 +80,11 @@ def load_calculate(infile):
         df["Ne"], df["nui"], df["nue"]
         )
     
-    df["R"] = recombination_rate(df["O2"], df["N2"])
-    return df
-
-infile = "D:\\FluxTube\\01\\201301010000.txt"
-
-
-load_calculate(infile)
+    df["R"] = atm.recombination2(df["O2"], df["N2"])
+    
+    df.rename(columns = {"U": "zon", "V": "mer"}, 
+              inplace = True)
+    if dn is None:
+        dn = datetime_from_fn(infile)
+        
+    return atm.fluxtube_eff_wind(df, dn)

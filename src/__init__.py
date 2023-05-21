@@ -8,7 +8,7 @@ from .core import (
     )
 
 from .methods import scale_gradient
-from .run_models import test_data
+# from .run_models import test_data
 
 import settings as s
 

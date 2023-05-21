@@ -4,7 +4,28 @@ import datetime as dt
 from GEO import sites
 import pandas as pd
 
+import pandas as pd
+import ionosphere as io
+from models import altrange_models
 
+def test_data(**kwargs):
+    
+    df = altrange_models(**kwargs)
+
+    nu = io.collision_frequencies()
+
+    nui = nu.ion_neutrals(
+        df["Tn"], df["O"], 
+        df["O2"], df["N2"]
+        )
+        
+    nue = nu.electrons_neutrals(
+        df["O"], df["O2"], df["N2"],
+        df["He"], df["H"], df["Te"]
+    )    
+    return pd.DataFrame({"ne": df["ne"].copy(), 
+                         "nui": nui, 
+                         "nue": nue})
 
 def plot_pedersen_in_different_alts():
     
@@ -18,7 +39,7 @@ def plot_pedersen_in_different_alts():
         hmax = 150
         )
 
-    ds = io.test_data(**kwargs)
+    ds = test_data(**kwargs)
 
     c = io.conductivity()
 
