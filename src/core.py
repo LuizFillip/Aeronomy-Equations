@@ -41,6 +41,25 @@ def cond_from_models(**kwargs):
             altrange_models(**kwargs))
         )
 
+# import datetime as dt
+# from GEO import sites
+# lat, lon = sites["saa"]["coords"]
+# dn = dt.datetime(2013, 1, 1, 21, 0) 
+
+
+# kwargs = dict(
+#      dn = dn, 
+#      glat = lat, 
+#      glon = lon,
+#      hmin = 150 
+#      )
+
+# ds = cond_from_models(**kwargs)
+
+
+
+
+
 def cond_from_file(
         infile = "pyglow_south.txt", 
         order = 1e6           
