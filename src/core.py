@@ -1,11 +1,11 @@
 import pandas as pd
 import ionosphere as io
-from models import altrange_models
+from models import altrange_models, point_msis
 from utils import datetime_from_fn
 import atmosphere as atm
 
 
-def compute_parameters(df) -> dict:
+def compute_parameters(df, B = 0.25e-04) -> dict:
     
     """
     Compute collision frequencies and 
@@ -24,38 +24,21 @@ def compute_parameters(df) -> dict:
         df["He"], df["H"], df["Te"]
     )
     
-    cond = io.conductivity2(df["ne"], nue, nui)
-    
-    return {"perd": cond.pedersen, 
-            "hall": cond.hall, 
-            "parl": cond.parallel,
-            "nui": nui, 
-            "nue": nue}
+    c = io.conductivity(B = B)
 
-def cond_from_models(**kwargs):
-    
-    """Compute conductivities from native models."""
-    
-    return pd.DataFrame(
-        compute_parameters(
-            altrange_models(**kwargs))
+    df["perd"] = c.pedersen(
+        df["ne"], nui, nue
         )
+    
+    df["hall"] = c.hall(
+        df["ne"], nui, nue
+        )
+        
+    return df
 
-# import datetime as dt
-# from GEO import sites
-# lat, lon = sites["saa"]["coords"]
-# dn = dt.datetime(2013, 1, 1, 21, 0) 
 
-
-# kwargs = dict(
-#      dn = dn, 
-#      glat = lat, 
-#      glon = lon,
-#      hmin = 150 
-#      )
-
-# ds = cond_from_models(**kwargs)
-
+import datetime as dt
+from GEO import sites
 
 
 
@@ -81,6 +64,8 @@ def load_calculate(infile, dn = None):
 
     df = pd.read_csv(infile, index_col = 0)
     
+    dn =  datetime_from_fn(infile)
+    
     nu = io.collision_frequencies()
     
     df["nui"] = nu.ion_neutrals(
@@ -93,7 +78,11 @@ def load_calculate(infile, dn = None):
         df["He"], df["H"], df["Te"]
     )
     
-    c = io.conductivity()
+    mag = load_mag()
+    
+    B = mag[mag.index == dn]["F"].item()
+    
+    c = io.conductivity(B = B)
 
     df["perd"] = c.pedersen(
         df["Ne"], df["nui"], df["nue"]
@@ -103,7 +92,56 @@ def load_calculate(infile, dn = None):
     
     df.rename(columns = {"U": "zon", "V": "mer"}, 
               inplace = True)
-    if dn is None:
-        dn = datetime_from_fn(infile)
+    #if dn is None:
+    dn = datetime_from_fn(infile)
         
     return atm.fluxtube_eff_wind(df, dn)
+
+
+def load_mag():
+
+    df = pd.read_csv("mag.txt", index_col = 0)
+    df.index = pd.to_datetime(df.index)
+    
+    df = df.resample("10min").asfreq()
+    
+    df["F"] = df["F"] * 1e-9
+    return df
+    
+
+def cond_from_models(ds, B = 0.25e-04):
+    
+    """Compute conductivities from in models."""
+    
+    return pd.DataFrame(compute_parameters(ds, B = B))
+def timeseries():
+    mag = load_mag()
+    
+    out = []
+    
+    for dn in mag.index:
+    
+        lat, lon = sites["saa"]["coords"]
+            
+        kwargs = dict(
+              dn = dn, 
+              glat = lat, 
+              glon = lon,
+              hmin = 150 
+              )
+        
+        
+        B = mag[mag.index == dn]["F"].item()
+        
+        ds =  cond_from_models(altrange_models(**kwargs), B = B)
+        ds["alt"] = ds.index
+        ds.index = [dn] * len(ds)
+        out.append(ds)
+        
+    ts = pd.concat(out)
+    
+    
+    ts.to_csv("conds.txt")
+    
+    
+

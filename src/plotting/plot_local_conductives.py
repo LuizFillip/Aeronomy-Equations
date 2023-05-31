@@ -48,6 +48,7 @@ def plot_local_ratio_conductivities(**kwargs):
      fig, ax = plt.subplots(
          dpi = 300, 
          ncols = 2,
+         figsize = (8, 8), 
          sharey = True
          )
      
