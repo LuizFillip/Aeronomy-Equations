@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Models.src.core import neutral_iono_parameters
+from models import neutral_iono_parameters
 import datetime as dt
 
 
