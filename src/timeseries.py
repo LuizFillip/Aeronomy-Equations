@@ -1,39 +1,23 @@
 import pandas as pd
+import os
+import ionosphere as io
+from common import load_by_time
+
+def scale_gradient():
+    infile = 'D:\\database\\IRI2016Pyglow\\2013\\'
+    files = os.listdir(infile)
 
 
-def cond_from_models(ds, B = 0.25e-04):
-    
-    """Compute conductivities from in models."""
-    
-    return pd.DataFrame(compute_parameters(ds, B = B))
-
-
-
-def timeseries():
-    mag = mm.load_mag()
-    
     out = []
-    
-    for dn in mag.index:
-    
-        lat, lon = sites["saa"]["coords"]
-            
-        kwargs = dict(
-              dn = dn, 
-              glat = lat, 
-              glon = lon,
-              hmin = 150 
-              )
+    for filename in files:
+        df = load_by_time(infile + filename)
         
-        B = mag[mag.index == dn]["F"].item()
+        df['L'] = io.scale_gradient(df['Ne'], df['alt'])
+        print(filename)
+        out.append(df.loc[df['alt'] == 300, ['Ne', 'L']])
         
-        ds =  cond_from_models(altrange_models(**kwargs), B = B)
-        ds["alt"] = ds.index
-        ds.index = [dn] * len(ds)
-        out.append(ds)
-        
-    ts = pd.concat(out)
-    
-    
-    ts.to_csv("conds.txt")
+    df = pd.concat(out)
+
+    df.to_csv('scale_gradient.txt')
+    return
     
