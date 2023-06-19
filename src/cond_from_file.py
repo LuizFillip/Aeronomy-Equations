@@ -28,48 +28,48 @@ def load_mag():
     df["F"] = df["F"] * 1e-9
     return df
 
-# 
-mag = load_mag()
-
-lat, lon = sites["saa"]["coords"]
-
-out = {"perd": [], "hall": [], 
-        "B": [], "dn": [], "ne": [], 
-        "alt": []}
-
-for i in range(len(df)):
-    dn = df.index[i]
-    zeq = df.iloc[i, 0]
-    ne = df.iloc[i, 2]
+def conductivity():
+    mag = load_mag()
     
-    kwargs = dict(dn = dn, 
-                  zeq = zeq, 
-                  glat = lat, 
-                  glon = lon)
+    lat, lon = sites["saa"]["coords"]
     
-    B = mag[mag.index == dn]["F"].item()
+    out = {"perd": [], "hall": [], 
+            "B": [], "dn": [], "ne": [], 
+            "alt": []}
     
-    msi = point_models(**kwargs)
-    
-    nu = io.collision_frequencies()
-
-
-    nui = nu.ion_neutrals(msi["Tn"], msi["O"], msi["O2"], msi["N2"])
-    nue = nu.electrons_neutrals(
-        msi["O"], msi["O2"], msi["N2"],
-        msi["He"], msi["H"], msi["te"]
-    )
-
-    c = io.conductivity(B = B)
-    out["B"].append(B)
-    out["dn"].append(dn)
-    out["alt"].append(zeq)
-    out["ne"].append(ne)
-    out["perd"].append( c.pedersen(ne, nui, nue))
-    out["hall"].append(c.hall(ne, nui, nue))
+    for i in range(len(df)):
+        dn = df.index[i]
+        zeq = df.iloc[i, 0]
+        ne = df.iloc[i, 2]
+        
+        kwargs = dict(dn = dn, 
+                      zeq = zeq, 
+                      glat = lat, 
+                      glon = lon)
+        
+        B = mag[mag.index == dn]["F"].item()
+        
+        msi = point_models(**kwargs)
+        
+        nu = io.collision_frequencies()
     
     
-ds = pd.DataFrame(out)
-
-ds.to_csv("cond_iono.txt")
-
+        nui = nu.ion_neutrals(msi["Tn"], msi["O"], msi["O2"], msi["N2"])
+        nue = nu.electrons_neutrals(
+            msi["O"], msi["O2"], msi["N2"],
+            msi["He"], msi["H"], msi["te"]
+        )
+    
+        c = io.conductivity(B = B)
+        out["B"].append(B)
+        out["dn"].append(dn)
+        out["alt"].append(zeq)
+        out["ne"].append(ne)
+        out["perd"].append( c.pedersen(ne, nui, nue))
+        out["hall"].append(c.hall(ne, nui, nue))
+        
+        
+    ds = pd.DataFrame(out)
+    
+    ds.to_csv("cond_iono.txt")
+    
