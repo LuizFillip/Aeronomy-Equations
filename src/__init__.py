@@ -5,7 +5,7 @@ from .core import (
     compute_parameters, 
     load_calculate
     )
-from .timeseries import cond_from_models
+
 from .methods import scale_gradient
 
 import settings as s
