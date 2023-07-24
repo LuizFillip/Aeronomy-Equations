@@ -1,9 +1,8 @@
 import pandas as pd
 import ionosphere as io
-from utils import datetime_from_fn
+from base import datetime_from_fn
 import atmosphere as atm
-import magnetometers as mm
-import datetime as dt
+
 
 
 def compute_parameters(df, B = 0.25e-04) -> dict:

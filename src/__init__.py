@@ -5,9 +5,7 @@ from .core import (
     compute_parameters, 
     load_calculate
     )
+from .regions import split_regions
 
 from .methods import scale_gradient
 
-import settings as s
-
-s.config_labels()
