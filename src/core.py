@@ -1,11 +1,13 @@
 import pandas as pd
 import ionosphere as io
-from base import datetime_from_fn
+from base import Filename2dn
 import atmosphere as atm
 
 
 
-def compute_parameters(df, B = 0.25e-04) -> dict:
+def compute_parameters(
+        df, 
+        B = 0.25e-04) -> dict:
     
     """
     Compute collision frequencies and 
@@ -59,7 +61,7 @@ def load_calculate(infile, dn = None):
 
     df = pd.read_csv(infile, index_col = 0)
     
-    dn =  datetime_from_fn(infile)
+    dn =  Filename2dn(infile)
     
     nu = io.collision_frequencies()
     
@@ -72,14 +74,7 @@ def load_calculate(infile, dn = None):
         df["O"], df["O2"], df["N2"],
         df["He"], df["H"], df["Te"]
     )
-    
-   
-    # d, i, _, _, _, _, f = pyIGRF.igrf_value(
-    #     lat, 
-    #     lon, 
-    #     alt = alt, 
-    #     year = year_fraction(dn)
-    #     )
+
     c = io.conductivity()
 
     df["perd"] = c.pedersen(
@@ -91,7 +86,7 @@ def load_calculate(infile, dn = None):
     df.rename(columns = {"U": "zon", "V": "mer"}, 
               inplace = True)
    
-    dn = datetime_from_fn(infile)
+    dn = Filename2dn(infile)
         
     return atm.fluxtube_eff_wind(df, dn)
 

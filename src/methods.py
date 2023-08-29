@@ -23,3 +23,5 @@ def vz_out_equator(vz, uy, wd, i):
     wd_term = wd * pow(np.sin(I), 2)
     
     return vz_term + uy_term - wd_term 
+
+
