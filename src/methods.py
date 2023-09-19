@@ -2,19 +2,22 @@ import numpy as np
 
 def scale_gradient(Ne, dz = 1, factor = 1e-3):
     """
-    length scale gradient: Vertical variation of density
+    length scale gradient: Vertical 
+    variation of density
     
     Parameters:
         factor: convert km to meters
     """
-    return np.gradient(np.log(Ne), dz, edge_order = 2)*factor
+    return np.gradient(
+        np.log(Ne), dz, edge_order = 2)*factor
 
 
 
 def vz_out_equator(vz, uy, wd, i):
     """
-    A general expression for vertical plasma drift including
-    the effect from meridional wind and plasma diffusion
+    A general expression for vertical 
+    plasma drift including the effect 
+    from meridional wind and plasma diffusion
     """
     I = np.radians(i)
     

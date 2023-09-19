@@ -6,7 +6,8 @@ class conductivity:
     def __init__(
             self, 
             B = 0.25e-04,
-            mass = "effective"):
+            mass = "effective"
+            ):
         
         self.B = B
         
@@ -81,14 +82,17 @@ class conductivity:
         """Perpendicular to both E and B"""
         
         electron_term = (
-            self.electron_ratio(nue)**2 / (1 + self.electron_ratio(nue)**2)
+            self.electron_ratio(nue)**2 / 
+            (1 + self.electron_ratio(nue)**2)
             )
         
         ion_term = (
-            self.ion_ratio(nui)**2 / (1 + self.ion_ratio(nui)**2)
+            self.ion_ratio(nui)**2 /
+            (1 + self.ion_ratio(nui)**2)
             )
         
-        return (ne * self.charge / self.B) * (electron_term - ion_term)
+        return (ne * self.charge / 
+                self.B) * (electron_term - ion_term)
 
 
 

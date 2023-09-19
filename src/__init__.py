@@ -1,10 +1,7 @@
 from .conductivities import conductivity, conductivity2
 from .freq_collisions import collision_frequencies, ion_neutral
-from .core import (
-    cond_from_file, 
-    compute_parameters, 
-    load_calculate
-    )
+from .core import conductivity_parameters
+
 from .regions import split_regions
 
 from .methods import scale_gradient
