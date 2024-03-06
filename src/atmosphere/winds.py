@@ -73,7 +73,7 @@ class effective_wind(object):
         # Ueff_x (positiva para norte)
         return (
             mer * np.cos(D) + zon * np.sin(D)
-                ) * np.sin(I)
+                ) * np.cos(I) * np.sin(I)
 
 
 
